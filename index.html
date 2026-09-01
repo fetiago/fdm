@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratório Spolin // Caderno de Prática</title>
+  <style>
+    /* ==========================================================================
+       RESET & BASE TYPOGRAPHY
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-canvas: #e9e7e1;
+      --bg-sheet: #fdfdfc;
+      --text-main: #141414;
+      --text-muted: #555552;
+      --border: #1a1a1a;
+      --border-subtle: #cfcdc4;
+      --accent: #8b2500;
+      --space-block: 12px;
+      --font-serif: 'Georgia', 'Palatino', 'Cambria', serif;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 9.5pt;
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+      padding: 20px 0 60px 0;
+    }
+
+    /* ==========================================================================
+       BARRA DE CONTROLE (APENAS TELA)
+       ========================================================================== */
+    .action-bar {
+      position: sticky;
+      top: 10px;
+      z-index: 1000;
+      max-width: 210mm;
+      margin: 0 auto 16px auto;
+      background: #181816;
+      color: #faf9f6;
+      padding: 8px 14px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+    }
+
+    .bar-title {
+      font-family: var(--font-mono);
+      font-size: 8pt;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .bar-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn {
+      background: #ffffff;
+      color: #141414;
+      border: none;
+      padding: 4px 10px;
+      font-size: 8.5pt;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover {
+      background: #e2e0d8;
+    }
+
+    .btn-dark {
+      background: #2a2a28;
+      color: #f0eee6;
+      border: 1px solid #444;
+    }
+
+    .timer-val {
+      font-family: var(--font-mono);
+      font-weight: bold;
+      color: #4ade80;
+    }
+
+    /* ==========================================================================
+       ESTRUTURA DE PÁGINAS: FORMATO A4 (PADRÃO)
+       ========================================================================== */
+    .sheet {
+      width: 210mm;
+      height: 297mm;
+      margin: 0 auto 20px auto;
+      background: var(--bg-sheet);
+      padding: 10mm 12mm 8mm 12mm;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #dcd9d0;
+      overflow: hidden;
+    }
+
+    .page-break {
+      break-after: page;
+      page-break-after: always;
+    }
+
+    .sheet-header {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 4px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .doc-tag {
+      font-family: var(--font-mono);
+      font-size: 7pt;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .doc-meta {
+      font-family: var(--font-mono);
+      font-size: 7pt;
+      color: var(--text-muted);
+    }
+
+    .sheet-footer {
+      margin-top: auto;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 4px;
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 6.5pt;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       TÍTULOS ENXUTOS (1 A 3 PALAVRAS)
+       ========================================================================== */
+    h1.title-main {
+      font-family: var(--font-serif);
+      font-size: 16pt;
+      font-weight: 700;
+      line-height: 1.1;
+      text-transform: uppercase;
+      letter-spacing: -0.3px;
+      margin-bottom: 2px;
+    }
+
+    .subtitle-main {
+      font-family: var(--font-sans);
+      font-size: 8pt;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    h2.section-label {
+      font-family: var(--font-serif);
+      font-size: 10.5pt;
+      font-weight: 700;
+      border-left: 3px solid var(--border);
+      padding-left: 6px;
+      margin: 6px 0 6px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    /* ==========================================================================
+       CÂNONE & GLOSAS (QUADROS CONDENSADOS)
+       ========================================================================== */
+    .canon-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(150px, 0.85fr);
+      gap: 0;
+      margin: 0 0 var(--space-block) 0;
+      align-items: stretch;
+    }
+
+    .canon-stack {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-block);
+      min-width: 0;
+    }
+
+    .canon-box {
+      border: 1px solid var(--border);
+      background: #fff;
+      padding: 6px 8px 5px 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 92px;
+    }
+
+    .canon-tag {
+      font-family: var(--font-mono);
+      font-size: 6.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 3px;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .canon-text {
+      font-family: var(--font-serif);
+      font-size: 9.2pt;
+      line-height: 1.38;
+      color: #111;
+      font-style: italic;
+      text-align: justify;
+    }
+
+    .canon-cite {
+      font-family: var(--font-mono);
+      font-size: 5.6pt;
+      color: var(--text-muted);
+      margin-top: 4px;
+      text-align: right;
+      text-transform: uppercase;
+    }
+
+    .glosa-box {
+      display: flex;
+      flex-direction: column;
+      border: none;
+      background: transparent;
+      padding: 0 0 0 6px;
+      min-height: 92px;
+    }
+
+    .glosa-tag {
+      display: none;
+    }
+
+    /* Linhas Pautadas para Caneta */
+    .ruled-blank {
+      flex: 1;
+      min-height: 52px;
+      width: 100%;
+      background-image: repeating-linear-gradient(to bottom, transparent, transparent 15px, #d8d6ce 16px);
+      background-color: transparent;
+    }
+
+    .ruled-full {
+      width: 100%;
+      min-height: 110px;
+      background-image: repeating-linear-gradient(to bottom, transparent, transparent 16px, #d8d6ce 17px);
+      border: none;
+      background-color: transparent;
+    }
+
+    .notes-panel {
+      margin-top: 8px;
+      height: 118px;
+      min-height: 118px;
+    }
+
+    /* ==========================================================================
+       CONTRATO, FUGAS & PROVOCAÇÕES
+       ========================================================================== */
+    .contract-box {
+      border: 1px solid var(--border-subtle);
+      background: #faf9f5;
+      padding: 6px 10px;
+      margin: 0 0 var(--space-block) 0;
+      box-shadow: inset 0 0 0 1px rgba(20,20,20,0.04);
+    }
+
+    .evaluation-grid {
+      /* Ajusta a largura das duas colunas e o espaço entre elas */
+      display: grid;
+      grid-template-columns: minmax(0, 0.92fr) minmax(0, 0.92fr);
+      gap: 3px 12px;
+      margin-top: 2px;
+      max-width: calc(100% - 10px);
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .evaluation-item {
+      /* Ajusta o miolo da pergunta: tamanho, espaçamento e encurtamento da coluna */
+      display: block;
+      font-size: 8pt;
+      line-height: 1.3;
+      color: #47403d;
+      text-align: justify;
+      max-width: 95%;
+      padding-right: 2px;
+    }
+
+    .evaluation-item strong {
+      /* Largura do número da enumeração */
+      display: inline-block;
+      min-width: 10px;
+      margin-right: 4px;
+      font-weight: 700;
+    }
+
+    .contract-list {
+      list-style: none;
+      font-size: 7.8pt;
+      line-height: 1.35;
+    }
+
+    .contract-list li {
+      margin-bottom: 3px;
+      padding-left: 10px;
+      position: relative;
+    }
+
+    .contract-list li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .checklist-box {
+      border: 1.2px solid var(--border);
+      padding: 7px 10px 8px 10px;
+      background: #fffdf9;
+      margin: 0 0 var(--space-block) 0;
+      font-size: 8pt;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      line-height: 1.4;
+    }
+
+    .checklist-header {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      flex-wrap: wrap;
+      font-size: 8pt;
+      line-height: 1.35;
+    }
+
+    .checklist-header strong {
+      font-family: var(--font-serif);
+      font-size: 8.3pt;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .checklist-header em {
+      font-family: var(--font-serif);
+      font-size: 7.9pt;
+      font-style: italic;
+      color: var(--text-main);
+    }
+
+    .checklist-items {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 10px 12px;
+      font-family: var(--font-sans);
+      font-size: 7.1pt;
+      line-height: 1.35;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .checklist-items label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 16px;
+      color: var(--text-main);
+      white-space: nowrap;
+      flex: 1 1 0;
+    }
+
+    .checklist-items input {
+      margin: 0;
+      accent-color: var(--accent);
+      transform: translateY(-0.2px);
+    }
+
+    .provoc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 8px 0 12px 0;
+    }
+
+    .provoc-card {
+      border: none;
+      padding: 18px 16px 12px 16px;
+      background: #f2f1ee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 96px;
+    }
+
+    .provoc-q {
+      font-family: var(--font-serif);
+      font-size: 9.1pt;
+      font-style: italic;
+      line-height: 1.45;
+      margin: 0;
+      text-align: center;
+      color: #191919;
+    }
+
+    .routine-box {
+      border: 1.2px solid var(--border);
+      background: #fffefb;
+      padding: 8px 10px;
+      margin-bottom: 10px;
+    }
+
+    .routine-header {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 5px;
+      margin-bottom: 6px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .routine-num {
+      font-family: var(--font-mono);
+      font-size: 7pt;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    .routine-title {
+      font-family: var(--font-serif);
+      font-size: 9.3pt;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .routine-timing {
+      font-family: var(--font-mono);
+      font-size: 6.6pt;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .routine-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 10pt;
+      line-height: 1.45;
+      color: #69655f;
+      text-align: justify;
+    }
+
+    .col-canonical {
+      border-right: 1px solid var(--border-subtle);
+      padding-right: 8px;
+    }
+
+    .col-trio {
+      padding-left: 2px;
+    }
+
+    .routine-sub {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 6.2pt;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      font-weight: 700;
+      color: #2f2f2d;
+      margin-bottom: 3px;
+    }
+
+    .side-coaching-cues {
+      background: #f4f2ed;
+      border-left: 2px solid var(--accent);
+      padding: 4px 7px;
+      font-family: var(--font-sans);
+      font-size: 6.9pt;
+      line-height: 1.45;
+      color: #1d1d1b;
+    }
+
+    /* ==========================================================================
+       ROTINAS PRÁTICAS (PÁGINAS 3 E 4)
+       ========================================================================== */
+    .routine-unit {
+      border: 1.2px solid var(--border);
+      margin-bottom: 8px;
+      background: #fff;
+      padding: 6px 8px;
+    }
+
+    .routine-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2px;
+      margin-bottom: 4px;
+    }
+
+    .routine-code {
+      font-family: var(--font-mono);
+      font-size: 7pt;
+      font-weight: bold;
+      color: var(--accent);
+    }
+
+    .routine-name {
+      font-family: var(--font-serif);
+      font-size: 9.5pt;
+      font-weight: bold;
+    }
+
+    .routine-dur {
+      font-family: var(--font-mono);
+      font-size: 6.8pt;
+      color: var(--text-muted);
+    }
+
+    .routine-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 7.4pt;
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+
+    .col-left {
+      border-right: 1px solid var(--border-subtle);
+      padding-right: 6px;
+    }
+
+    .sub-head {
+      font-family: var(--font-mono);
+      font-size: 6.2pt;
+      text-transform: uppercase;
+      font-weight: bold;
+      color: #333;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .commands-bar {
+      background: #f4f3ef;
+      border-left: 2px solid var(--accent);
+      padding: 4px 6px;
+      font-family: var(--font-mono);
+      font-size: 6.5pt;
+      line-height: 1.3;
+    }
+
+    /* ==========================================================================
+       IMPRESSÃO (@MEDIA PRINT)
+       ========================================================================== */
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+
+      .action-bar {
+        display: none !important;
+      }
+
+      .sheet {
+        margin: 0;
+        box-shadow: none;
+        border: none;
+        page-break-after: always;
+        break-after: page;
+      }
+
+      @page {
+        size: A4 portrait;
+        margin: 8mm 10mm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra de Ações -->
+  <aside class="action-bar">
+    <div class="bar-title">Lab Spolin // Trio</div>
+    <div class="bar-controls">
+      <button class="btn btn-dark" id="timerBtn" onclick="toggleTimer()">Timer: <span id="timerText" class="timer-val">00:00</span></button>
+      <button class="btn btn-dark" onclick="resetTimer()">Zerar</button>
+      <button class="btn" onclick="window.print()">Imprimir (PDF)</button>
+    </div>
+  </aside>
+
+  <!-- ==========================================================================
+       FOLHA 1: CÂNONE (PÁGINA 01)
+       ========================================================================== -->
+  <main class="sheet page-break" id="p1">
+    <header class="sheet-header">
+      <span class="doc-tag">Foro de Maringá</span>
+      <span class="doc-meta">Pág. 01</span>
+    </header>
+
+    <h1 class="title-main">A Arte de Não Interpretar</h1>
+    <div class="subtitle-main">Dossiê Teórico & Protocolo Prático de Foco</div>
+
+    <!-- Cânone 1 -->
+    <section class="canon-grid">
+      <article class="canon-box">
+        <header class="canon-tag"><span>O Foco contra a Artificialidade</span><span>§ 01</span></header>
+        <blockquote class="canon-text">
+          "Importante no jogo é a 'bola' — o Foco, um problema técnico, às vezes um duplo problema técnico que mantém a mente [...] tão ocupada passando a mão simultaneamente na barriga e na cabeça em direções opostas, que o gênio (espontaneidade), sem proteção, 'acontece'."
+        </blockquote>
+        <footer class="canon-cite">Viola Spolin, O Jogo Teatral no Livro do Diretor (2008, p. 18)</footer>
+      </article>
+      <div class="glosa-box">
+        <div class="ruled-blank"></div>
+      </div>
+    </section>
+
+    <!-- Cânone 2 -->
+    <section class="canon-grid">
+      <article class="canon-box">
+        <header class="canon-tag"><span>A Extirpação do Julgamento</span><span>§ 02</span></header>
+        <blockquote class="canon-text">
+          "O medo do julgamento lentamente abandona os jogadores na medida em que bom/mau, certo/errado revelam ser as correntes que nos prendem, e logo desaparecem do vocabulário de todos. Nesta perda do medo reside o alívio, neste alívio reside o abandono dos autocontroles restritivos."
+        </blockquote>
+        <footer class="canon-cite">Viola Spolin, Improvisação para o Teatro (2008, p. 23)</footer>
+      </article>
+      <div class="glosa-box">
+        <div class="ruled-blank"></div>
+      </div>
+    </section>
+
+    <!-- Cânone 3 -->
+    <section class="canon-grid">
+      <article class="canon-box">
+        <header class="canon-tag"><span>A Instrução na Ação</span><span>§ 03</span></header>
+        <blockquote class="canon-text">
+          "A instrução atinge o organismo total. As expressões usadas na instrução surgem espontaneamente a partir do que está acontecendo no palco, e são dadas no momento em que os jogadores estão em ação. Este é um método para manter o jogador e o diretor em contato [...] sem interromper o fluxo."
+        </blockquote>
+        <footer class="canon-cite">Viola Spolin, O Jogo Teatral no Livro do Diretor (2008, p. 18-19)</footer>
+      </article>
+      <div class="glosa-box">
+        <div class="ruled-blank"></div>
+      </div>
+    </section>
+
+    <!-- Cânone 4 -->
+    <section class="canon-grid">
+      <article class="canon-box">
+        <header class="canon-tag"><span>A Resistência e o Falso Personagem</span><span>§ 04</span></header>
+        <blockquote class="canon-text">
+          "Uma pessoa com forte resistência tentará manipular os que estão à sua volta para que trabalhem para si [...]. O exibicionismo e o egocentrismo persistem enquanto o aluno-ator fizer coisas fora de hora, 'representar', assumir 'personagens', e 'emocionar-se' ao invés de envolver-se com o problema."
+        </blockquote>
+        <footer class="canon-cite">Viola Spolin, Improvisação para o Teatro (2008, p. 23)</footer>
+      </article>
+      <div class="glosa-box">
+        <div class="ruled-blank"></div>
+      </div>
+    </section>
+
+    <!-- Cânone 5 e 6 -->
+    <section class="canon-grid">
+      <div class="canon-stack">
+        <article class="canon-box">
+          <header class="canon-tag"><span>05. Mostre, Não Conte!</span><span>§ 05</span></header>
+          <blockquote class="canon-text">
+            "Se um jogador fez uma pantomima do que ele viu [...], então ele estava contando. Se se manteve firmemente no problema de ver, fez bom uso do POC. Usar objetos do espaço não é fazer mímica: a mímica descreve um gesto conhecido; o objeto do espaço torna visível o invisível."
+          </blockquote>
+          <footer class="canon-cite">Viola Spolin, Improvisação para o Teatro (p. 57) / Livro do Diretor (p. 120)</footer>
+        </article>
+
+        <article class="canon-box">
+          <header class="canon-tag"><span>06. A Regra do Jogo como Autoridade Democrática</span><span>§ 06</span></header>
+          <blockquote class="canon-text">
+            "Longe de estar submisso a teorias [...], o ator passa a ser o artesão de sua própria educação [...]. A disciplina imposta de fora produz ação inibida ou rebelde. A disciplina consentida torna-se ação responsável e criativa."
+          </blockquote>
+          <footer class="canon-cite">Ingrid D. Koudela / Viola Spolin (2008, p. XXIV & p. 16)</footer>
+        </article>
+      </div>
+      <div class="glosa-box">
+        <div class="ruled-blank"></div>
+      </div>
+    </section>
+
+    <!-- Sugestão de Contrato -->
+    <section class="contract-box">
+      <h2 class="section-label" style="margin: 0 0 4px 0; font-size: 8.5pt;">Pacto do Trio</h2>
+      <ul class="contract-list">
+        <li><strong>Simetria:</strong> Sem diretor fixo. A regra do jogo é a autoridade máxima aceita pelo grupo.</li>
+        <li><strong>Vocabulário:</strong> Banidos os termos <em>"bom/ruim"</em> e <em>"certo/errado"</em>. Apenas checar: <em>o foco foi sustentado no espaço?</em></li>
+        <li><strong>Rotatividade:</strong> Todos se alternam rigorosamente entre atuar no espaço e lançar comandos.</li>
+        <li><strong>Sem Roteiro:</strong> Proibido combinar a cena previamente. O teatro nasce da fricção física imediata.</li>
+      </ul>
+    </section>
+
+    <!-- Fuga Habitual -->
+    <section class="checklist-box">
+      <div class="checklist-header">
+        <strong>Fuga Habitual:</strong>
+        <em>Qual é o meu desvio imediato no tablado?</em>
+      </div>
+      <div class="checklist-items">
+        <label><input type="checkbox"> Intelectualizar a cena</label>
+        <label><input type="checkbox"> Fazer piada / gags</label>
+        <label><input type="checkbox"> Tentar controlar o parceiro</label>
+        <label><input type="checkbox"> Vergonha do erro</label>
+      </div>
+    </section>
+
+
+
+    <footer class="sheet-footer">
+      <span>Caderno de Experimentação</span>
+      <span>01 // Leitura</span>
+    </footer>
+  </main>
+
+
+  <!-- ==========================================================================
+       FOLHA 2: CÂNONE RESTANTE, PACTO & PROVOCAÇÕES (PÁGINA 02)
+       ========================================================================== -->
+  <main class="sheet page-break" id="p2">
+    <header class="sheet-header">
+      <span class="doc-tag">Foro de Maringá</span>
+      <span class="doc-meta">Pág. 02</span>
+    </header>
+    <!-- Provocações -->
+    <h2 class="section-label">Provocações</h2>
+    <section class="provoc-grid">
+      <article class="provoc-card">
+        <p class="provoc-q">"Você está habitando o ar da sala como matéria ou apenas desfilando intenções da sua cabeça?"</p>
+      </article>
+      <article class="provoc-card">
+        <p class="provoc-q">"Quando busca emocionar a plateia, você serve ao problema técnico ou à vaidade de ser aprovado?"</p>
+      </article>
+      <article class="provoc-card">
+        <p class="provoc-q">"Se você já sabe o que vai fazer em seguida, você está no presente ou operando um plano morto?"</p>
+      </article>
+      <article class="provoc-card">
+        <p class="provoc-q">"A sua graça em cena é liberdade criativa ou apenas pânico do silêncio e do não-saber?"</p>
+      </article>
+    </section>
+
+    <div class="routine-box">
+      <div class="routine-header">
+        <span class="routine-num">ROTINA 01</span>
+        <span class="routine-title">Caminhada no Espaço #1 (Substância Desconhecida)</span>
+        <span class="routine-timing">12 min (4 min / pessoa)</span>
+      </div>
+      <div class="routine-columns">
+        <div class="col-canonical">
+          <span class="routine-sub">Regra Canônica de Spolin:</span>
+          Caminhar pelo espaço sentindo o ar não como um vazio, mas como uma substância física e tangível que toca cada poro da pele. Não dar nome à substância.
+        </div>
+        <div class="col-trio">
+          <span class="routine-sub">Proposição do Trio (Adaptação):</span>
+          Dois andam em direções opostas; o terceiro lança comandos de contato físico com o espaço. A cada 4 minutos, troca-se o condutor sem parar a dinâmica.
+        </div>
+      </div>
+      <div class="side-coaching-cues">
+        <strong>Comandos:</strong> "Sinta o ar com as costas!" • "Toque o espaço com o queixo!" • "Não interprete o peso, sinta o peso real!" • "Elimine a pressa!"
+      </div>
+    </div>
+
+    <!-- rotinas do jeito que quero -->
+    <div class="routine-box">
+      <div class="routine-header">
+        <span class="routine-num">ROTINA 02</span>
+        <span class="routine-title">Espelho Orgânico #1 (Sem Líder Fixo)</span>
+        <span class="routine-timing">15 min (3 rodadas de 5 min)</span>
+      </div>
+      <div class="routine-columns">
+        <div class="col-canonical">
+          <span class="routine-sub">Regra Canônica de Spolin:</span>
+          Duas pessoas frente a frente. Os movimentos de corpo inteiro devem ser tão simultâneos que um observador não consiga identificar quem propôs e quem reflete.
+        </div>
+        <div class="col-trio">
+          <span class="routine-sub">Proposição do Trio (Adaptação):</span>
+          O 3º integrante fica a 2 metros de distância em ângulo lateral, vigiando se os dois estão caindo em 'joguinhos de pegadinha' ou se há escuta visceral contínua.
+        </div>
+      </div>
+      <div class="side-coaching-cues">
+        <strong>Comandos:</strong> "Movimento de corpo todo!" • "Não antecipe a forma!" • "Entregue a liderança sem avisar!" • "Olhos no parceiro, não no espelho imaginário!"
+      </div>
+    </div>
+
+    <div class="routine-box">
+      <div class="routine-header">
+        <span class="routine-num">ROTINA 03</span>
+        <span class="routine-title">O 'Onde' Emergente com Blablação Cruzada</span>
+        <span class="routine-timing">18 min (3 cenas de 6 min)</span>
+      </div>
+      <div class="routine-columns">
+        <div class="col-canonical">
+          <span class="routine-sub">Regra Canônica de Spolin:</span>
+          Estabelecer um local físico compartilhado através da manipulação precisa de objetos invisíveis, usando apenas 'Blablação' (sons sem significado verbal formal).
+        </div>
+        <div class="col-trio">
+          <span class="routine-sub">Proposição do Trio (Adaptação):</span>
+          Proibido combinar o que é o lugar antes de entrar. O primeiro entra e manipula um objeto real no espaço; o segundo entra e interage com o ambiente estabelecido.
+        </div>
+      </div>
+      <div class="side-coaching-cues">
+        <strong>Comandos:</strong> "Mostre o peso do objeto!" • "Blablação direta, não use mímica!" • "Onde você está tocando?" • "Mantenha o foco no objeto!"
+      </div>
+    </div>
+
+    <!-- Avaliação -->
+    <section class="contract-box" style="margin-bottom: 6px; padding: 4px 8px;">
+      <h2 class="section-label" style="margin: 0 0 2px 0; font-size: 7.8pt;">Análise</h2>
+      <div class="evaluation-grid">
+        <div class="evaluation-item"><strong>1.</strong> O foco foi mantido no problema físico ou a ação escorregou para o personagem e a interpretação?</div>
+        <div class="evaluation-item"><strong>2.</strong> Os objetos invisíveis existiram no espaço ou ficaram apenas na cabeça de quem os imaginava?</div>
+        <div class="evaluation-item"><strong>3.</strong> Os comandos do side-coach foram dados no momento exato, ou se atrasaram, tornaram-se opinião e ruído?</div>
+        <div class="evaluation-item"><strong>4.</strong> Conseguimos extinguir as palavras <em>bom</em>, <em>ruim</em>, <em>certo</em> e <em>errado</em> da nossa roda de conversa e da nossa ação?</div>
+      </div>
+    </section>
+
+    <div class="ruled-full notes-panel" aria-label="Bloco de linhas para diário de campo pessoal"></div>
+
+    <footer class="sheet-footer">
+      <span>Caderno de Experimentações</span>
+      <span>02 // Fricção</span>
+    </footer>
+  </main>
+
+
+  <!-- ==========================================================================
+       SCRIPTS: TIMER
+       ========================================================================== -->
+  <script>
+    // Timer
+    let timerInterval = null;
+    let totalSecs = 0;
+
+    function formatTime(s) {
+      const m = Math.floor(s / 60).toString().padStart(2, '0');
+      const sec = (s % 60).toString().padStart(2, '0');
+      return `${m}:${sec}`;
+    }
+
+    function toggleTimer() {
+      const btn = document.getElementById('timerBtn');
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        btn.style.background = '#2a2a28';
+      } else {
+        timerInterval = setInterval(() => {
+          totalSecs++;
+          document.getElementById('timerText').textContent = formatTime(totalSecs);
+        }, 1000);
+        btn.style.background = '#8b2500';
+      }
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      totalSecs = 0;
+      document.getElementById('timerText').textContent = '00:00';
+      document.getElementById('timerBtn').style.background = '#2a2a28';
+    }
+
+  </script>
+</body>
+</html>
